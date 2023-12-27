@@ -48,6 +48,15 @@ const getAllTableHeadsElement = document.getElementsByTagName('th');
 // get Error Message
 let errorMessage = document.createElement('p');
 errorMessage.style.color = 'red';
+// get Update Product
+let getUpdateProductButton = document.createElement('button');
+getUpdateProductButton.innerHTML = 'Update Product'
+getUpdateProductButton.classList.add('cud-Button');
+getUpdateProductButton.style.width = '100%';
+getUpdateProductButton.style.marginTop = '5px';
+// store Product Id to Update
+let storeProductId;
+
 
 
 //------------------------------------------------------------------------------
@@ -96,7 +105,7 @@ getElementsToCountTotal.forEach(function (element) {
             document.querySelector('.money').insertAdjacentElement('afterend', errorMessage);
             element.focus();
             element.select();
-        } else if (/^0[0-9]/.test(element.value) || countOccurrences(element.value, '.') > 1) {
+        } else if (/^0[0-9]/.test(element.value) || countOccurrences(element.value, '.') > 1 || element.value == '.') {
             errorMessage.innerHTML = 'Enter a VALID Input..';
             document.querySelector('.money').insertAdjacentElement('afterend', errorMessage);
             element.focus();
@@ -145,15 +154,14 @@ getQuantityElement.onblur = function () {
 // -------------------
 // __CREATE products__
 // -------------------
-let products;
-
-if (localStorage.products) {
-    products = JSON.parse(localStorage.products);
-} else {
-    products = [];
-}
-
 getCreateProductButton.onclick = function () {
+    let products;
+    if (localStorage.products) {
+        products = JSON.parse(localStorage.products);
+    } else {
+        products = [];
+    }
+
     if (getTitleElement.value != '' && getPriceElement.value != '' &&
         getTaxesElement.value != '' && getQuantityElement.value != '' &&
         getCategorySelectElement.value != '' && getCategorySelectElement.value !== 'Choose a Category') {
@@ -189,6 +197,7 @@ getCreateProductButton.onclick = function () {
 // __READ Products__
 // -----------------
 function readProducts() {
+    const products = JSON.parse(localStorage.getItem('products'));
     let createProductsTable = '';
     for (let i = 0; i < products.length; i++) {
         createProductsTable += `
@@ -201,7 +210,7 @@ function readProducts() {
         <td class='tableCell'>${products[i].quantity}</td>
         <td class='tableCell'>${products[i].category}</td>
 
-        <td class='tableCell'><i onclick=" updateData(${i})" class="fas fa-edit" id="update-product" title="Update" style="color:yellow";></i></td>
+        <td class='tableCell' onclick='updateProduct(event)'><i class="fas fa-edit" id="update-product_${i}" title="Update" style="color:yellow";></i></td>
         <td class='tableCell' onclick='deleteProduct(event)'><i class="fa-solid fa-trash" id="delete-product_${i}" title="Delete" style="color:red;"></i></td>
         </tr>
         `;
@@ -225,10 +234,35 @@ function readProducts() {
 // __DELETE Products__
 // -------------------
 function deleteProduct(e) {
+    const products = JSON.parse(localStorage.getItem('products'));
     const getProductId = e.target.id.split('_')[1];
     products.splice(getProductId, 1);
     localStorage.setItem('products', JSON.stringify(products));
     readProducts();
+}
+
+
+// -------------------
+// __UPDATE Products__
+// -------------------
+function updateProduct(e) {
+    getCreateProductButton.style.display = 'none';
+    getUpdateProductButton.style.display = 'block';
+    getCategorySelectElement.insertAdjacentElement('afterend', getUpdateProductButton);
+
+    let getAllProducts = JSON.parse(localStorage.getItem('products'));
+    const getProductId = e.target.id.split('_')[1];
+    const getProductToUpdate = getAllProducts[getProductId];
+
+    getTitleElement.value = getProductToUpdate.title;
+    getPriceElement.value = getProductToUpdate.price;
+    getTaxesElement.value = getProductToUpdate.taxes;
+    getTotalElement.innerHTML = getProductToUpdate.total;
+    getTotalElement.style.backgroundColor = '#040';
+    getQuantityElement.value = getProductToUpdate.quantity;
+    getCategorySelectElement.value = getProductToUpdate.category;
+
+    storeProductId = getProductId;
 }
 
 
@@ -321,7 +355,7 @@ getElementsToCountTotal.forEach(function (element) {
     element.addEventListener('keyup', () => {
         if (getPriceElement.value != '' && getPriceElement.value != 0 &&
             !(/^0[0-9]/.test(getTaxesElement.value)) && !(/^0[0-9]/.test(getPriceElement.value)) &&
-            countOccurrences(element.value, '.') <= 1) {
+            countOccurrences(element.value, '.') <= 1 && element.value != '.') {
             let totalPrice = Number(getPriceElement.value) + Number(getTaxesElement.value);
             getTotalElement.innerHTML = totalPrice;
             getTotalElement.style.background = '#040';
@@ -378,6 +412,31 @@ function countOccurrences(str, charToCount) {
         }
     }
     return count;
+}
+
+
+getUpdateProductButton.onclick = () => {
+    let getAllProducts = JSON.parse(localStorage.getItem('products'));
+    const getProductId = storeProductId;
+
+    let updatedProduct = {
+        title: getTitleElement.value,
+        price: getPriceElement.value,
+        taxes: getTaxesElement.value,
+        total: getTotalElement.innerHTML,
+        quantity: getQuantityElement.value,
+        category: getCategorySelectElement.value
+    }
+
+    getAllProducts[getProductId] = updatedProduct;
+    localStorage.setItem('products', JSON.stringify(getAllProducts));
+
+    readProducts();
+    clearInputs();
+    readCategories();
+    getTotalElement.style.background = 'rgba(255, 17, 17, 0.655)';
+    getUpdateProductButton.style.display = 'none';
+    getCreateProductButton.style.display = 'block';
 }
 
 
