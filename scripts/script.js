@@ -274,14 +274,13 @@ function updateProduct(e) {
 // ---------------------
 // __CREATE Categories__
 // ---------------------
-let categories;
-if (localStorage.categories) {
-    categories = JSON.parse(localStorage.categories);
-} else {
-    categories = [];
-}
-
 getCreateCategoryButton.onclick = function () {
+    let categories;
+    if (localStorage.categories) {
+        categories = JSON.parse(localStorage.categories);
+    } else {
+        categories = [];
+    }
     if (getCategoryTitleElement.value != '' && categories.length != 0) {
         categories = JSON.parse(localStorage.categories);
         if (ensureExistence(categories, getCategoryTitleElement.value)) {
@@ -334,11 +333,22 @@ function readCategories() {
 // __DELETE categories__
 // ---------------------
 getDeleteCategoryButton.addEventListener('click', function () {
-    let selectedIndex = getCategorySelectToActionElement.selectedIndex;
-    if (selectedIndex > 0) {
-        categories.splice(selectedIndex - 1, 1);
-        localStorage.setItem('categories', JSON.stringify(categories));
-        readCategories();
+    let getAllcategories = JSON.parse(localStorage.categories);
+    let getAllproducts = JSON.parse(localStorage.getItem('products'));
+
+    // Check is the selected category has products before removing..
+    if (getAllproducts.findIndex(function (product) {
+        return product.category == getCategorySelectToActionElement.value;
+    }) != -1) {
+        errorMessage.innerHTML = 'This Category has products, please remove them first..';
+        getCategorySelectToActionElement.insertAdjacentElement('afterend', errorMessage);
+    } else {
+        let selectedIndex = getCategorySelectToActionElement.selectedIndex;
+        if (selectedIndex > 0) {
+            getAllcategories.splice(selectedIndex - 1, 1);
+            localStorage.setItem('categories', JSON.stringify(getAllcategories));
+            readCategories();
+        }
     }
 });
 
