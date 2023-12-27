@@ -35,6 +35,8 @@ const getUpdateCategoryButton = document.getElementById('updateCategory');
 const getDeleteCategoryButton = document.getElementById('deleteCategory');
 // get the button of creating a category
 const getCreateCategoryButton = document.getElementById('createCategory');
+// get category buttons container
+const getCategoryButtonsContainer = document.getElementsByClassName('category-buttons')[0];
 
 // -------------------------
 // __Individuals Variables__
@@ -56,6 +58,19 @@ getUpdateProductButton.style.width = '100%';
 getUpdateProductButton.style.marginTop = '5px';
 // store Product Id to Update
 let storeProductId;
+// create update category input
+let getUpdateCategoryInput = document.createElement('input');
+getUpdateCategoryInput.placeholder = "New Name";
+// create button to submit update
+let getSubmitUpdateCategoryButton = document.createElement('button');
+getSubmitUpdateCategoryButton.innerHTML = 'Update'
+getSubmitUpdateCategoryButton.classList.add('cud-Button');
+getSubmitUpdateCategoryButton.style.background = '#040';
+// create button to cancel update
+let getCancelUpdateCategoryButton = document.createElement('button');
+getCancelUpdateCategoryButton.innerHTML = 'Cancel'
+getCancelUpdateCategoryButton.classList.add('cud-Button');
+getCancelUpdateCategoryButton.style.background = 'rgba(255, 17, 17, 0.655)';
 
 
 
@@ -199,21 +214,23 @@ getCreateProductButton.onclick = function () {
 function readProducts() {
     const products = JSON.parse(localStorage.getItem('products'));
     let createProductsTable = '';
-    for (let i = 0; i < products.length; i++) {
-        createProductsTable += `
-        <tr>
-        <td class='tableCell'>${i + 1}</td>
-        <td class='tableCell'>${products[i].title}</td>
-        <td class='tableCell'>${products[i].price}</td>
-        <td class='tableCell'>${products[i].taxes}</td>
-        <td class='tableCell'>${products[i].total}</td>
-        <td class='tableCell'>${products[i].quantity}</td>
-        <td class='tableCell'>${products[i].category}</td>
-
-        <td class='tableCell' onclick='updateProduct(event)'><i class="fas fa-edit" id="update-product_${i}" title="Update" style="color:yellow";></i></td>
-        <td class='tableCell' onclick='deleteProduct(event)'><i class="fa-solid fa-trash" id="delete-product_${i}" title="Delete" style="color:red;"></i></td>
-        </tr>
-        `;
+    if (products) {
+        for (let i = 0; i < products.length; i++) {
+            createProductsTable += `
+            <tr>
+            <td class='tableCell'>${i + 1}</td>
+            <td class='tableCell'>${products[i].title}</td>
+            <td class='tableCell'>${products[i].price}</td>
+            <td class='tableCell'>${products[i].taxes}</td>
+            <td class='tableCell'>${products[i].total}</td>
+            <td class='tableCell'>${products[i].quantity}</td>
+            <td class='tableCell'>${products[i].category}</td>
+    
+            <td class='tableCell' onclick='updateProduct(event)'><i class="fas fa-edit" id="update-product_${i}" title="Update" style="color:yellow";></i></td>
+            <td class='tableCell' onclick='deleteProduct(event)'><i class="fa-solid fa-trash" id="delete-product_${i}" title="Delete" style="color:red;"></i></td>
+            </tr>
+            `;
+        }
     }
 
     document.getElementById('tableBody').innerHTML = createProductsTable;
@@ -330,6 +347,77 @@ function readCategories() {
 
 
 // ---------------------
+// __UPDATE categories__
+// ---------------------
+getUpdateCategoryButton.onclick = () => {
+    if (getCategorySelectToActionElement.selectedIndex > 0) {
+        getCategoryButtonsContainer.insertBefore(getCancelUpdateCategoryButton, getDeleteCategoryButton);
+        getCategoryButtonsContainer.insertBefore(getSubmitUpdateCategoryButton, getCancelUpdateCategoryButton);
+        getCategorySelectToActionElement.insertAdjacentElement('afterend', getUpdateCategoryInput);
+        getUpdateCategoryInput.value = getCategorySelectToActionElement.value;
+        getUpdateCategoryInput.style.display = 'block';
+        getDeleteCategoryButton.style.display = "none";
+        getUpdateCategoryButton.style.display = "none";
+        getSubmitUpdateCategoryButton.style.display = "block";
+        getCancelUpdateCategoryButton.style.display = "block";
+    }
+}
+
+// CANCEL UPDATE
+getCancelUpdateCategoryButton.onclick = () => {
+    getUpdateCategoryInput.style.display = 'none';
+    getUpdateCategoryButton.style.display = "block";
+    getDeleteCategoryButton.style.display = "block";
+    getSubmitUpdateCategoryButton.style.display = "none";
+    getCancelUpdateCategoryButton.style.display = "none";
+    readCategories();
+}
+
+// SUBMIT UPDATE
+getSubmitUpdateCategoryButton.onclick = () => {
+    let getAllCategories = JSON.parse(localStorage.categories);
+    let getAllProducts = JSON.parse(localStorage.getItem('products'));
+    let index;
+
+    if (getAllCategories.findIndex(function (category) {
+        return category.title == getUpdateCategoryInput.value;
+    }) != -1) {
+        errorMessage.innerHTML = 'This Category is existed already..';
+        getUpdateCategoryInput.insertAdjacentElement('afterend', errorMessage);
+    } else {
+        if (getAllProducts) {
+            for (let i = 0; i < getAllProducts.length; i++) {
+                if (getAllProducts[i].category === getCategorySelectToActionElement.value) {
+                    getAllProducts[i].category = getUpdateCategoryInput.value;
+                }
+            }
+        }
+
+        localStorage.setItem('products', JSON.stringify(getAllProducts));
+
+        if (getAllCategories.length != 0) {
+            for (let i = 0; i < getAllCategories.length; i++) {
+                if (getAllCategories[i].title == getCategorySelectToActionElement.value) {
+                    index = i;
+                    break;
+                }
+            }
+
+            getAllCategories[index] = { title: getUpdateCategoryInput.value };
+            localStorage.setItem('categories', JSON.stringify(getAllCategories));
+            readCategories();
+            readProducts();
+        }
+
+        getUpdateCategoryButton.style.display = "block";
+        getSubmitUpdateCategoryButton.style.display = "none";
+        getUpdateCategoryInput.style.display = 'none';
+        getUpdateCategoryInput.style.display = 'none';
+    }
+}
+
+
+// ---------------------
 // __DELETE categories__
 // ---------------------
 getDeleteCategoryButton.addEventListener('click', function () {
@@ -399,15 +487,19 @@ function ensureExistence(arr, str) {
     return arr.some(element => String(element.title.replace(/ /g, "")).toLowerCase().trim() === String(str.replace(/ /g, "")).toLowerCase().trim());
 }
 
-/* ---------------------------------------
+/* ---------------------------------------------------------------
 __REMOVE error message when
-createProduct + createCategory + updateCategory + deleteCategory
-on bluring__
---------------------------------------- */
+createProduct + createCategory + updateCategory + deleteCategory +
+submitUpdateCategory on bluring__
+----------------------------------------------------------------*/
 getProductCategoryButtonsElement.forEach((element) => {
     element.addEventListener('blur', () => {
         errorMessage.innerHTML = '';
     })
+})
+
+getSubmitUpdateCategoryButton.addEventListener('blur', () => {
+    errorMessage.innerHTML = '';
 })
 
 
