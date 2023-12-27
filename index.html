@@ -14,22 +14,16 @@
 
 <body>
     <div class="container">
-        <div class="contain-header">
-            <h1 id="userName"></h1>
-            <button id="logOut" onclick="LogOut()">Log Out</button>
-        </div>
-        <header class="head" style="clear: both;">
+        <header>
             <h1>Store Management System</h1>
-            <span class="info">&#169; 2023, All rights reserved for <span class="typing">Mostafa Ahmed, Ahmed Saber,
-                    Ahmed Makram, Ahmed Mortada
-                    and Amr Salama.</span>
+            <span class="info">&#169; 2023, All rights reserved for <span class="typing">Mostafa Ahmed</span>
             </span>
         </header>
 
 
         <section class="product-category-container">
             <section class="product-inputs">
-                <input class="text-validations" type="text" name="title" id="title" placeholder="Title">
+                <input class="text-validations" type="text" name="title" id="productTitle" placeholder="Title">
 
                 <div class="money">
                     <input class="total-element validate-numbers" type="text" name="price" id="price"
@@ -41,23 +35,22 @@
 
                 <input type="text" name="quantity" id="quantity" placeholder="Quantity" class="validate-numbers">
 
-                <select name="category" id="category"></select>
+                <select name="category" id="categorySelect"></select>
 
-                <button id="submitProduct">Create Product</button>
+                <button class="cud-Button" id="createProduct">Create Product</button>
             </section>
 
 
             <section class="category-inputs">
 
-                <input class="text-validations" type="text" name="title" id="categoryCreate" placeholder="Category">
-                <button id="submitCategory">Create Category</button>
+                <input class="text-validations" type="text" name="title" id="categoryTitle" placeholder="Category">
+                <button class="cud-Button" id="createCategory">Create Category</button>
 
                 <div class="category-update-delete">
                     <select name="category" id="chooseCategoryToAction"></select>
-                    <input id="up" type="text"></input>
                     <div class="category-buttons">
-                        <button id="updateCategory">Update Category</button>
-                        <button id="deleteCategory">Delete Category</button>
+                        <button class="cud-Button" id="updateCategory">Update Category</button>
+                        <button class="cud-Button" id="deleteCategory">Delete Category</button>
                     </div>
                 </div>
 
@@ -76,7 +69,6 @@
                 </div>
             </div>
 
-
             <table>
                 <thead>
                     <tr>
@@ -91,27 +83,10 @@
                         <th>delete</th>
                     </tr>
                 </thead>
-
-                <tbody id="tableBody">
-
-                </tbody>
-
-
+                <tbody id="tableBody"></tbody>
             </table>
+
         </section>
-        <!-- <form id="update-product-form" style="display: none;">
-            <label for="update-product-title-input">Product Title:</label>
-            <input type="text" id="update-product-title-input" name="product-title">
-            <label for="update-product-price-input">Product Price:</label>
-            <input type="text" id="update-product-price-input" name="product-price">
-            <label for="update-product-taxes-input">Product Taxes:</label>
-            <input type="text" id="update-product-taxes-input" name="product-taxes">
-            <label for="update-product-quantity-input">Product Quantity:</label>
-            <input type="text" id="update-product-quantity-input" name="product-quantity">
-            <label for="update-product-category-input">Product Category:</label>
-            <input type="text" id="update-product-category-input" name="product-category">
-            <button type="submit">Update</button>
-          </form> -->
     </div>
 
     <script src="./scripts/script.js"></script>

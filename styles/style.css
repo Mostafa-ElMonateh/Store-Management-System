@@ -14,21 +14,17 @@ body {
 .container {
     width: 80%;
     margin: 25px auto 0;
-    /* background-color: orange; */
 }
 
-.contain-header{
-    display: flex;
-    justify-content: space-between;
-}
-.head {
-    /* background-color: blueviolet; */
+
+/*____Header____*/
+header {
     text-align: center;
     overflow-x: hidden;
     margin-bottom: 30px;
 }
 
-.head h1 {
+header h1 {
     font-size: 40px;
     margin-bottom: 8px;
 }
@@ -48,7 +44,6 @@ body {
     padding: 10px;
 }
 
-
 .category-inputs {
     background-color: #555;
     width: 28vw;
@@ -60,10 +55,9 @@ body {
     width: 100%;
 }
 
-#category{
+#categorySelect{
     width: 50%;
 }
-
 
 .category-update-delete {
     display: flex;
@@ -72,11 +66,11 @@ body {
     margin-top: 10px;
 }
 
-#submitCategory{
+#createCategory{
     width: 100%;
 }
 
-#submitProduct{
+#createProduct{
     margin-top: 5px;
 }
 
@@ -218,7 +212,7 @@ td {
     position: absolute;
     top: 0;
     left: 0;
-    animation: typing 13s steps(75) infinite;
+    animation: typing 2.5s steps(13) infinite;
     background-color: #222;
 }
 

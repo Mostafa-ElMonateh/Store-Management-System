@@ -1,35 +1,62 @@
-const getTitleElement = document.getElementById('title');
-const getPriceElement = document.getElementById('price');
-const getTaxesElement = document.getElementById('taxes');
-const getTotalElement = document.getElementById('total');
-const getQuantityElement = document.getElementById('quantity');
-const getCategoryElement = document.getElementById('category');
-const getsubmitProductElement = document.getElementById('submitProduct');
-const getElementsToCountTotal = document.querySelectorAll('.total-element');
-const getCategoryCreateElement = document.getElementById('categoryCreate');
-const getTextElementsToValidate = document.querySelectorAll('.text-validations');
-const getSubmitCategoryElement = document.getElementById('submitCategory');
-const getCategoryElementToUpdateOrDelete = document.getElementById('chooseCategoryToAction');
-const tableHead = document.getElementsByTagName('th');
-const getUpdateCategoryButton = document.getElementById('updateCategory');
-const getDeleteCategoryButton = document.getElementById('deleteCategory');
+//----------------------------------------------------------------------------
+// -------------------------------- Variables --------------------------------
+//----------------------------------------------------------------------------
 
+// ---------------------
+// __Product Variables__
+// ---------------------
+// get the name of a product
+const getTitleElement = document.getElementById('productTitle');
+// get the price of a product
+const getPriceElement = document.getElementById('price');
+// get taxes of a product
+const getTaxesElement = document.getElementById('taxes');
+// get a NodeList of [price && taxes]
+const getElementsToCountTotal = document.querySelectorAll('.total-element');
+// get total of a product
+const getTotalElement = document.getElementById('total');
+// get quantity of a product
+const getQuantityElement = document.getElementById('quantity');
+// get category select
+const getCategorySelectElement = document.getElementById('categorySelect');
+// get the button of creating a product
+const getCreateProductButton = document.getElementById('createProduct');
+
+// ----------------------
+// __Category Variables__
+// ----------------------
+// get the name of a category
+const getCategoryTitleElement = document.getElementById('categoryTitle');
+// get CategoryToAction Select
+const getCategorySelectToActionElement = document.getElementById('chooseCategoryToAction');
+// get the button of updating a category
+const getUpdateCategoryButton = document.getElementById('updateCategory');
+// get the button of deleting a category
+const getDeleteCategoryButton = document.getElementById('deleteCategory');
+// get the button of creating a category
+const getCreateCategoryButton = document.getElementById('createCategory');
+
+// -------------------------
+// __Individuals Variables__
+// -------------------------
+// get a NodeList of [product title && category title]
+const getTextElementsToValidate = document.querySelectorAll('.text-validations');
+// get all Product and Category Buttons
+const getProductCategoryButtonsElement = document.querySelectorAll('.cud-Button');
+// get all table heads
+const getAllTableHeadsElement = document.getElementsByTagName('th');
+// get Error Message
 let errorMessage = document.createElement('p');
 errorMessage.style.color = 'red';
-let mood = "create";
-let temp;
-let inp = document.createElement('input');
 
 
 //------------------------------------------------------------------------------
 // -------------------------------- Validations --------------------------------
 //------------------------------------------------------------------------------
 
-
-// ------------------------------------------
-// Validations On Title + Category inputs----
-// ------------------------------------------
-
+// -------------------------------------------
+// __Validations On Title && Category inputs__
+// -------------------------------------------
 getTextElementsToValidate.forEach(function (element) {
     element.addEventListener('blur', () => {
         if (element.value.length >= 20) {
@@ -49,11 +76,9 @@ getTextElementsToValidate.forEach(function (element) {
 })
 
 
-
-// ---------------------------------------
-// Validations On Price && Taxes inputs---
-// ---------------------------------------
-
+// ----------------------------------------
+// __Validations On Price && Taxes inputs__
+// ----------------------------------------
 getElementsToCountTotal.forEach(function (element) {
     element.oninput = function () {
         element.value = element.value.replace(/[^0-9.]/g, '');
@@ -82,22 +107,10 @@ getElementsToCountTotal.forEach(function (element) {
     }
 });
 
-function countOccurrences(str, charToCount) {
-    let count = 0;
 
-    for (let i = 0; i < str.length; i++) {
-        if (str.charAt(i) === charToCount) {
-            count++;
-        }
-    }
-
-    return count;
-}
-
-//----------------------------------
-// Validations On Quantity inputs---
-//----------------------------------
-
+//-----------------------------------
+// __Validations On Quantity inputs__
+//-----------------------------------
 getQuantityElement.oninput = function () {
     getQuantityElement.value = getQuantityElement.value.replace(/[^0-9]/g, '');
 };
@@ -125,37 +138,13 @@ getQuantityElement.onblur = function () {
 }
 
 
+//-----------------------------------------------------------------------------
+// ----------------------------- CRUD on Products -----------------------------
+//-----------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
-// ----------------------------------- CRUDS -----------------------------------
-//------------------------------------------------------------------------------
-
-
-// ------------------------------
-// GET total price---------------
-// ------------------------------
-
-getElementsToCountTotal.forEach(function (element) {
-    element.addEventListener('keyup', () => {
-        if (getPriceElement.value != '' && getPriceElement.value != 0 &&
-            !(/^0[0-9]/.test(getTaxesElement.value)) && !(/^0[0-9]/.test(getPriceElement.value)) &&
-            countOccurrences(element.value, '.') <= 1) {
-            let totalPrice = Number(getPriceElement.value) + Number(getTaxesElement.value);
-            getTotalElement.innerHTML = totalPrice;
-            getTotalElement.style.background = '#040';
-        } else {
-            getTotalElement.innerHTML = '';
-            getTotalElement.style.background = 'rgba(255, 17, 17, 0.655)';
-        }
-    });
-});
-
-
-
-// ------------------------------
-// CREATE products---------------
-// ------------------------------
-
+// -------------------
+// __CREATE products__
+// -------------------
 let products;
 
 if (localStorage.products) {
@@ -164,12 +153,16 @@ if (localStorage.products) {
     products = [];
 }
 
-getsubmitProductElement.onclick = function () {
+getCreateProductButton.onclick = function () {
     if (getTitleElement.value != '' && getPriceElement.value != '' &&
         getTaxesElement.value != '' && getQuantityElement.value != '' &&
-        getCategoryElement.value != '' && getCategoryElement.value !== 'Choose a Category') {
+        getCategorySelectElement.value != '' && getCategorySelectElement.value !== 'Choose a Category') {
 
-
+        if (ensureExistence(products, getTitleElement.value)) {
+            errorMessage.innerHTML = 'This is already product with this name..';
+            getCreateProductButton.insertAdjacentElement('afterend', errorMessage);
+            return;
+        }
 
         let newProduct = {
             title: getTitleElement.value,
@@ -177,139 +170,26 @@ getsubmitProductElement.onclick = function () {
             taxes: getTaxesElement.value,
             total: getTotalElement.innerHTML,
             quantity: getQuantityElement.value,
-            category: getCategoryElement.value
+            category: getCategorySelectElement.value
         }
-        if (mood === "create") {
-            if (ensureExistence(products, getTitleElement.value)) {
-                errorMessage.innerHTML = 'This is already product with this name..';
-                getsubmitProductElement.insertAdjacentElement('afterend', errorMessage);
-                return;
-            }
-            else {
-                products.unshift(newProduct);
-                localStorage.setItem('products', JSON.stringify(products));
-                clearInputs();
-                getTotalElement.style.background = 'rgba(255, 17, 17, 0.655)';
-            }
-
-        }
-        else {
-
-            products.splice(temp, 1);
-            if (ensureExistence(products, getTitleElement.value)) {
-                errorMessage.innerHTML = 'This is already product with this name..';
-                getsubmitProductElement.insertAdjacentElement('afterend', errorMessage);
-                products.splice(temp, 0, newProduct);
-
-                return;
-            }
-            else {
-                products.splice(temp, 0, newProduct);
-                localStorage.setItem('products', JSON.stringify(products));
-                mood = "create";
-                getsubmitProductElement.innerHTML = "create";
-                clearInputs();
-
-
-
-            }
-
-
-
-        }
-        // products.unshift(newProduct);
-        // localStorage.setItem('products', JSON.stringify(products));
-        // clearInputs();
-        // getTotalElement.style.background = 'rgba(255, 17, 17, 0.655)';
+        products.unshift(newProduct);
+        localStorage.setItem('products', JSON.stringify(products));
+        clearInputs();
+        getTotalElement.style.background = 'rgba(255, 17, 17, 0.655)';
     } else {
         errorMessage.innerHTML = 'Fill empty Boxes..';
-        getsubmitProductElement.insertAdjacentElement('afterend', errorMessage);
+        getCreateProductButton.insertAdjacentElement('afterend', errorMessage);
     }
-    showData();
+    readProducts();
     readCategories();
 };
 
 
-
-// ------------------------------
-// CREATE Categories-------------
-// ------------------------------
-
-let categories;
-
-if (localStorage.categories) {
-    categories = JSON.parse(localStorage.categories);
-
-} else {
-    categories = [];
-}
-
-getSubmitCategoryElement.onclick = function () {
-    if (getCategoryCreateElement.value != '' && categories.length != 0) {
-        categories = JSON.parse(localStorage.categories);
-        if (ensureExistence(categories, getCategoryCreateElement.value)) {
-            errorMessage.innerHTML = 'This is already category with this name..';
-            getCategoryCreateElement.insertAdjacentElement('afterend', errorMessage);
-            return;
-        }
-        let newCategory = {
-            title: getCategoryCreateElement.value,
-        }
-        categories.unshift(newCategory);
-        localStorage.setItem('categories', JSON.stringify(categories));
-        getCategoryCreateElement.value = '';
-        readCategories();
-    } else if (categories.length == 0) {
-        let newCategory = {
-            title: getCategoryCreateElement.value,
-        }
-        categories.unshift(newCategory);
-        localStorage.setItem('categories', JSON.stringify(categories));
-        getCategoryCreateElement.value = '';
-        readCategories();
-    } else {
-        errorMessage.innerHTML = 'Write the Category Title..';
-        getCategoryCreateElement.insertAdjacentElement('afterend', errorMessage);
-    }
-    showData();
-};
-
-
-function ensureExistence(arr, str) {
-    if (arr.length == 0) return false;
-    return arr.some(element => String(element.title.replace(/ /g, "")).toLowerCase().trim() === String(str.replace(/ /g, "")).toLowerCase().trim());
-}
-
-getDeleteCategoryButton.onblur = function () {
-    errorMessage.innerHTML = '';
-}
-getSubmitCategoryElement.onblur = function () {
-    errorMessage.innerHTML = '';
-}
-
-// ------------------------------
-// CLEAR inputs------------------
-// ------------------------------
-
-function clearInputs() {
-    getTitleElement.value = '';
-    getPriceElement.value = '';
-    getTaxesElement.value = '';
-    getTotalElement.innerHTML = '';
-    getQuantityElement.value = '';
-    getCategoryElement.innerHTML = '<option disabled selected>Choose a Category</option>';
-    getCategoryCreateElement.value = '';
-}
-
-
-// ------------------------------
-// READ Data From LocalStorage---
-// ------------------------------
-//        <td class='tableCell ${i + 1}update' id='updateProduct' onclick()><i class="fas fa-edit" id="update-product" title="Update" style="color:yellow";></i></td>
-function showData() {
-
+// -----------------
+// __READ Products__
+// -----------------
+function readProducts() {
     let createProductsTable = '';
-
     for (let i = 0; i < products.length; i++) {
         createProductsTable += `
         <tr>
@@ -328,228 +208,181 @@ function showData() {
     }
 
     document.getElementById('tableBody').innerHTML = createProductsTable;
-
-
     if (document.querySelector('.tableCell')) {
-        for (let i = 0; i < tableHead.length; i++) {
-            tableHead[i].style.color = 'green';
+        for (let i = 0; i < getAllTableHeadsElement.length; i++) {
+            getAllTableHeadsElement[i].style.color = 'green';
         }
     }
     else {
-        for (let i = 0; i < tableHead.length; i++) {
-            tableHead[i].style.color = '#fff';
+        for (let i = 0; i < getAllTableHeadsElement.length; i++) {
+            getAllTableHeadsElement[i].style.color = '#fff';
         }
     }
-
 }
 
-showData();
+
+// -------------------
+// __DELETE Products__
+// -------------------
+function deleteProduct(e) {
+    const getProductId = e.target.id.split('_')[1];
+    products.splice(getProductId, 1);
+    localStorage.setItem('products', JSON.stringify(products));
+    readProducts();
+}
 
 
+//-----------------------------------------------------------------------------
+// ---------------------------- CRUD on Categories ----------------------------
+//-----------------------------------------------------------------------------
+
+
+// ---------------------
+// __CREATE Categories__
+// ---------------------
+let categories;
+if (localStorage.categories) {
+    categories = JSON.parse(localStorage.categories);
+} else {
+    categories = [];
+}
+
+getCreateCategoryButton.onclick = function () {
+    if (getCategoryTitleElement.value != '' && categories.length != 0) {
+        categories = JSON.parse(localStorage.categories);
+        if (ensureExistence(categories, getCategoryTitleElement.value)) {
+            errorMessage.innerHTML = 'This is already category with this name..';
+            getCategoryTitleElement.insertAdjacentElement('afterend', errorMessage);
+            return;
+        }
+        let newCategory = {
+            title: getCategoryTitleElement.value,
+        }
+        categories.unshift(newCategory);
+        localStorage.setItem('categories', JSON.stringify(categories));
+        getCategoryTitleElement.value = '';
+        readCategories();
+    } else if (categories.length == 0) {
+        let newCategory = {
+            title: getCategoryTitleElement.value,
+        }
+        categories.unshift(newCategory);
+        localStorage.setItem('categories', JSON.stringify(categories));
+        getCategoryTitleElement.value = '';
+        readCategories();
+    } else {
+        errorMessage.innerHTML = 'Write the Category Title..';
+        getCategoryTitleElement.insertAdjacentElement('afterend', errorMessage);
+    }
+    readProducts();
+};
+
+
+// -------------------
+// __READ categories__
+// -------------------
 function readCategories() {
-    getCategoryElement.innerHTML = '<option disabled selected>Choose a Category</option>';
-    getCategoryElementToUpdateOrDelete.innerHTML = '<option disabled selected>Choose Category to Update or Delete</option>';
+    getCategorySelectElement.innerHTML = '<option disabled selected>Choose a Category</option>';
+    getCategorySelectToActionElement.innerHTML = '<option disabled selected>Choose Category to Update or Delete</option>';
     let getCategories = JSON.parse(localStorage.getItem('categories'));
     let categoriesList = ``;
     if (getCategories != null) {
         getCategories.forEach(function (element) {
             categoriesList += `<option>${element.title}</option>`;
         });
-        getCategoryElement.innerHTML += categoriesList;
-        getCategoryElementToUpdateOrDelete.innerHTML += categoriesList;
+        getCategorySelectElement.innerHTML += categoriesList;
+        getCategorySelectToActionElement.innerHTML += categoriesList;
     }
 }
 
-readCategories();
 
-
-// ------------------------------
-// DELETE Categories-------------
-// ------------------------------
-
-// getDeleteCategoryButton.onclick = function () {
-//     if (getCategoryElementToUpdateOrDelete.value !== 'Choose Category to Update or Delete') {
-//         for (let index = 0; index < products.length; index++) {
-//             if (products[index].category === getCategoryElementToUpdateOrDelete.value) {
-//                 errorMessage.innerHTML = `This Category has products, please update these products' categories first..`;
-//                 getCategoryElementToUpdateOrDelete.insertAdjacentElement('afterend', errorMessage);
-//                 return;
-//             }
-//         }
-//         const categories = JSON.parse(localStorage.getItem('categories'));
-
-//         let pos;
-//         for (let index = 0; index < categories.length; index++) {
-//             if (categories[index].title == getCategoryElementToUpdateOrDelete.value) {
-//                 pos = index;
-//                 break;
-//             }
-//         }
-
-//         categories.splice(pos, 1);
-
-//         localStorage.removeItem('categories');
-//         localStorage.setItem('categories', JSON.stringify(categories));
-//         getCategoryUpdateInputElement.style.display='none';
-//         readCategories();
-//     }
-// }
-
-// getCategoryElementToUpdateOrDelete.onclick = () => {
-//     errorMessage.innerHTML = '';
-// }
-
-
-
-// ------------------------------
-// DELETE Products---------------
-// ------------------------------
-function deleteProduct(e) {
-    const getProductId = e.target.id.split('_')[1];
-    products.splice(getProductId, 1);
-
-    localStorage.removeItem('products');
-    localStorage.setItem('products', JSON.stringify(products));
-
-    showData();
-}
-
-
-// show user name
-
-document.getElementById('userName').innerHTML = localStorage.getItem('fullName')
-
-// LogOut
-
-function LogOut() {
-    open('./Login.html', '_self')
-}
-
-// UpdateCategory
-
-const getCategoryToUpdateElement = document.getElementById('chooseCategoryToAction');
-const getCategoryUpdateInputElement = document.getElementById('up');
-const getUpdateCategoryButtonElement = document.getElementById('updateCategory');
-
-// Event listener for the dropdown menu
-getCategoryToUpdateElement.addEventListener('change', function () {
-    // Check if a category is selected
-    if (getCategoryToUpdateElement.value !== 'Choose Category to Update or Delete') {
-        // Display the input field
-        getCategoryUpdateInputElement.style.display = 'block';
-        // Set the value of the input field to the selected category
-        getCategoryUpdateInputElement.value = getCategoryToUpdateElement.value;
-    } else {
-        // Hide the input field if no category is selected
-        getCategoryUpdateInputElement.style.display = 'none';
-    }
-});
-
-// Event listener for the "Update Category" button
-getUpdateCategoryButtonElement.addEventListener('click', function () {
-    // Get the updated category name from the input field
-    const updatedCategoryName = getCategoryUpdateInputElement.value;
-
-    // Update the category in the array (assuming categories is an array in your code)
-    const selectedCategoryIndex = categories.findIndex(category => category.title === getCategoryToUpdateElement.value);
-
-    if (selectedCategoryIndex !== -1) {
-        categories[selectedCategoryIndex].title = updatedCategoryName;
-
-        // Update local storage
-        localStorage.setItem('categories', JSON.stringify(categories));
-
-        // Update UI or perform any other necessary actions
-        readCategories();
-
-        // Hide the input field after updating
-        getCategoryUpdateInputElement.style.display = 'none';
-    }
-});
-
-// Clear input field function
-function clearCategoryUpdateInput() {
-    getCategoryUpdateInputElement.value = '';
-    getCategoryUpdateInputElement.style.display = 'none';
-}
-
-
-
-
-//////////////////////// deleting a category  ////////////////////
-
-
-
-let deleteCategoryBtn = document.getElementById('deleteCategory');
-
-deleteCategoryBtn.addEventListener('click', function () {
-    let selectedIndex = getCategoryElementToUpdateOrDelete.selectedIndex;
+// ---------------------
+// __DELETE categories__
+// ---------------------
+getDeleteCategoryButton.addEventListener('click', function () {
+    let selectedIndex = getCategorySelectToActionElement.selectedIndex;
     if (selectedIndex > 0) {
-        categories.splice(selectedIndex - 1, 1); // Subtract 1 to account for the disabled "Choose Category to Update or Delete" option
+        categories.splice(selectedIndex - 1, 1);
         localStorage.setItem('categories', JSON.stringify(categories));
-        getCategoryUpdateInputElement.style.display = 'none';
         readCategories();
     }
 });
 
 
 
+//--------------------------------------------------------------------------------
+// ------------------------------ Independed Blocks ------------------------------
+//--------------------------------------------------------------------------------
 
-/////////////////updating a product////////////
-
-// let updateProductBtn = document.getElementById('update-product');
-
-// updateProductBtn.addEventListener('click', function() {
-// let selectedRow = this.closest('tr');
-// let selectedRowIndex = Array.from(selectedRow.parentNode.children).indexOf(selectedRow);
-// let selectedProduct = products[selectedRowIndex];
-// let updateProductForm = document.getElementById('update-product-form');
-// updateProductForm.style.display = 'block';
-// let updateProductTitleInput = document.getElementById('update-product-title-input');
-// updateProductTitleInput.value = selectedProduct.title;
-// let updateProductPriceInput = document.getElementById('update-product-price-input');
-// updateProductPriceInput.value = selectedProduct.price;
-// let updateProductTaxesInput = document.getElementById('update-product-taxes-input');
-// updateProductTaxesInput.value = selectedProduct.taxes;
-// let updateProductQuantityInput = document.getElementById('update-product-quantity-input');
-// updateProductQuantityInput.value = selectedProduct.quantity;
-// let updateProductCategoryInput = document.getElementById('update-product-category-input');
-// updateProductCategoryInput.value = selectedProduct.category;
-// });
-
-
-
-// let updateProductForm = document.getElementById('update-product-form');
-
-// updateProductForm.addEventListener('submit', function(event) {
-// event.preventDefault();
-// let selectedRow = this.closest('tr');
-// let selectedRowIndex = Array.from(selectedRow.parentNode.children).indexOf(selectedRow);
-// let updatedProductTitle = updateProductTitleInput.value;
-// let updatedProductPrice = updateProductPriceInput.value;
-// let updatedProductTaxes = updateProductTaxesInput.value;
-// let updatedProductQuantity = updateProductQuantityInput.value;
-// let updatedProductCategory = updateProductCategoryInput.value;
-// products[selectedRowIndex].title = updatedProductTitle;
-// products[selectedRowIndex].price = updatedProductPrice;
-// products[selectedRowIndex].taxes = updatedProductTaxes; products[selectedRowIndex].quantity = updatedProductQuantity; products[selectedRowIndex].category = updatedProductCategory; localStorage.setItem('products', JSON.stringify(products)); updateProductForm.style.display = 'none'; showData(); });
-
-
-//update product
-function updateData(i) {
-    title.value = products[i].title;
-    price.value = products[i].price;
-    taxes.value = products[i].taxes;
-
-    quantity.value = products[i].quantity;
-    category.value = products[i].category;
-    getsubmitProductElement.innerHTML = "update";
-    mood = "update";
-    temp = i;
-    scroll({
-        top: 0,
-        behavior: "smooth"
+// -------------------
+// __GET Total Price__
+// -------------------
+getElementsToCountTotal.forEach(function (element) {
+    element.addEventListener('keyup', () => {
+        if (getPriceElement.value != '' && getPriceElement.value != 0 &&
+            !(/^0[0-9]/.test(getTaxesElement.value)) && !(/^0[0-9]/.test(getPriceElement.value)) &&
+            countOccurrences(element.value, '.') <= 1) {
+            let totalPrice = Number(getPriceElement.value) + Number(getTaxesElement.value);
+            getTotalElement.innerHTML = totalPrice;
+            getTotalElement.style.background = '#040';
+        } else {
+            getTotalElement.innerHTML = '';
+            getTotalElement.style.background = 'rgba(255, 17, 17, 0.655)';
+        }
     });
+});
 
 
+// ----------------
+// __CLEAR Inputs__
+// ----------------
+function clearInputs() {
+    getTitleElement.value = '';
+    getPriceElement.value = '';
+    getTaxesElement.value = '';
+    getTotalElement.innerHTML = '';
+    getQuantityElement.value = '';
+    getCategorySelectElement.innerHTML = '<option disabled selected>Choose a Category</option>';
+    getCreateCategoryButton.value = '';
 }
+
+
+// ---------------------------------------
+// __Ensure that str is in an arr or not__
+// ---------------------------------------
+function ensureExistence(arr, str) {
+    if (arr.length == 0) return false;
+    return arr.some(element => String(element.title.replace(/ /g, "")).toLowerCase().trim() === String(str.replace(/ /g, "")).toLowerCase().trim());
+}
+
+/* ---------------------------------------
+__REMOVE error message when
+createProduct + createCategory + updateCategory + deleteCategory
+on bluring__
+--------------------------------------- */
+getProductCategoryButtonsElement.forEach((element) => {
+    element.addEventListener('blur', () => {
+        errorMessage.innerHTML = '';
+    })
+})
+
+
+// ----------------------------------------------------
+// __COUNT occurrences of a specific char in a string__
+// ----------------------------------------------------
+function countOccurrences(str, charToCount) {
+    let count = 0;
+    for (let i = 0; i < str.length; i++) {
+        if (str.charAt(i) === charToCount) {
+            count++;
+        }
+    }
+    return count;
+}
+
+
+// ---------
+// __Calls__
+// ---------
+readProducts();
+readCategories();
