@@ -410,9 +410,10 @@ getSubmitUpdateCategoryButton.onclick = () => {
         }
 
         getUpdateCategoryButton.style.display = "block";
+        getDeleteCategoryButton.style.display = 'block';
         getSubmitUpdateCategoryButton.style.display = "none";
         getUpdateCategoryInput.style.display = 'none';
-        getUpdateCategoryInput.style.display = 'none';
+        getCancelUpdateCategoryButton.style.display = "none";
     }
 }
 
